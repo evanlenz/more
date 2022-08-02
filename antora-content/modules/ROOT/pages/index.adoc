@@ -31,7 +31,7 @@ _italic_ text in examples is meant as a descriptive placeholder for
 something else, usually information that you'll provide. For example:
 
 
-[source,bash,subs=quotes+]
+[source,bash,subs=+quotes]
 ----
  *$* echo "My name is _your name_"
 ----
