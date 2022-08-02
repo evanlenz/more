@@ -1,0 +1,615 @@
+== image:../../boost.png[Boost]__ Getting Started on Unix Variants
+
+Index
+
+=== Get Boost
+
+The most reliable way to get a copy of Boost is to download a
+distribution from link:[SourceForge]:
+
+[arabic]
+. Download `.tar.bz2`_.
+. In the directory where you want to put the Boost installation, execute
++
+tar --bzip2 -xf _/path/to/_.tar.bz2
+
+Other Packages
+
+RedHat, Debian, and other distribution packagers supply Boost library
+packages, however you may need to adapt these instructions if you use
+third-party packages, because their creators usually choose to break
+Boost up into several packages, reorganize the directory structure of
+the Boost distribution, and/or rename the library binaries.footnote:[If
+developers of Boost packages would like to work with us to make sure
+these instructions can be used with their packages, we'd be glad to
+help. Please make your interest known to the link:[Boost developers'
+list].] If you have any trouble, we suggest using an official Boost
+distribution from link:[SourceForge].
+
+=== The Boost Distribution
+
+This is a sketch of the resulting directory structure:
+
+................._The “boost root directory”_::
+  *index.htm* ........._A copy of www.boost.org starts here_ *boost*
+  ........................._All Boost Header files_ *libs*
+  ............__Tests, .cpp__s__, docs, etc., by library__ *index.html*
+  ........_Library documentation starts here_ *algorithm* *any* *array*
+  _…more libraries…_ *status* ........................._Boost-wide test
+  suite_ *tools* ..........._Utilities, e.g. Boost.Build, quickbook,
+  bcp_ *more* .........................._Policy documents, etc._ *doc*
+  ..............._A subset of all Boost library docs_
+
+*Header Organization*
+
+The organization of Boost library headers isn't entirely uniform, but
+most libraries follow a few patterns:
+
+* Some older libraries and most very small libraries place all public
+headers directly into `boost`.
+* Most libraries' public headers live in a subdirectory of `boost`,
+named after the library. For example, you'll find the Python library's
+`def.hpp` header in
++
+`boost``python``def.hpp`.
+* Some libraries have an “aggregate header” in `boost` that `#include`s
+all of the library's other headers. For example, link:[Boost.Python]'s
+aggregate header is
++
+`boost``python.hpp`.
+* Most libraries place private headers in a subdirectory called
+`detail`, or `aux_`. Don't expect to find anything you can use in these
+directories.
+
+It's important to note the following:
+
+[[Boost root directory]]
+[arabic]
+. The path to the *boost root directory* (often ) is sometimes referred
+to as `$BOOST_ROOT` in documentation and mailing lists .
+. To compile anything in Boost, you need a directory containing the
+`boost` subdirectory in your `#include` path.
+. Since all of Boost's header files have the `.hpp` extension, and live
+in the `boost` subdirectory of the boost root, your Boost `#include`
+directives will look like:
++
+#include <boost/_whatever_.hpp>
++
+or
++
+#include "boost/_whatever_.hpp"
++
+depending on your preference regarding the use of angle bracket
+includes.
+. Don't be distracted by the `doc` subdirectory; it only contains a
+subset of the Boost documentation. Start with `libs``index.html` if
+you're looking for the whole enchilada.
+
+=== Header-Only Libraries
+
+The first thing many people want to know is, “how do I build Boost?” The
+good news is that often, there's nothing to build.
+
+Nothing to Build?
+
+Most Boost libraries are *header-only*: they consist _entirely of header
+files_ containing templates and inline functions, and require no
+separately-compiled library binaries or special treatment when linking.
+
+The only Boost libraries that _must_ be built separately are:
+
+* link:[Boost.Chrono]
+* link:[Boost.Context]
+* link:[Boost.Filesystem]
+* link:[Boost.GraphParallel]
+* link:[Boost.IOStreams]
+* link:[Boost.Locale]
+* link:[Boost.Log] (see link:../../index.htm[build documentation])
+* link:[Boost.MPI]
+* link:[Boost.ProgramOptions]
+* link:[Boost.Python] (see the link:[Boost.Python build documentation]
+before building and installing it)
+* link:[Boost.Regex]
+* link:[Boost.Serialization]
+* link:[Boost.Thread]
+* link:[Boost.Timer]
+* link:[Boost.Wave]
+
+__ ../../libs/log/doc/html/log/installation/config.html __
+../../libs/python/doc/html/building.html
+
+A few libraries have optional separately-compiled binaries:
+
+* link:[Boost.Graph] also has a binary component that is only needed if
+you intend to link:[parse GraphViz files].
+* link:[Boost.Math] has binary components for the TR1 and C99 cmath
+functions.
+* link:[Boost.Random] has a binary component which is only needed if
+you're using `random_device`.
+* link:[Boost.Test] can be used in “header-only” or “separately
+compiled” mode, although *separate compilation is recommended for
+serious use*.
+* link:[Boost.Exception] provides non-intrusive implementation of
+exception_ptr for 32-bit _MSC_VER==1310 and _MSC_VER==1400 which
+requires a separately-compiled binary. This is enabled by #define
+BOOST_ENABLE_NON_INTRUSIVE_EXCEPTION_PTR.
+* link:[Boost.System] is header-only since Boost 1.69. A stub library is
+still built for compatibility, but linking to it is no longer necessary.
+
+__ ../../libs/graph/doc/read_graphviz.html
+
+=== Build a Simple Program Using Boost
+
+To keep things simple, let's start by using a header-only library. The
+following program reads a sequence of integers from standard input, uses
+Boost.Lambda to multiply each number by three, and writes them to
+standard output:
+
+....
+#include <boost/lambda/lambda.hpp>
+#include <iostream>
+#include <iterator>
+#include <algorithm>
+
+int main() 
+{
+    using namespace boost::lambda;
+    typedef std::istream_iterator<int> in;
+
+    std::for_each( 
+        in(std::cin), in(), std::cout << (_1 * 3) << " " );
+}
+....
+
+Copy the text of this program into a file called `example.cpp`.
+
+Now, in the directory where you saved `example.cpp`, issue the following
+command:
+
+c++ -I example.cpp -o example
+
+To test the result, type:
+
+echo 1 2 3 | ./example
+
+==== Errors and Warnings
+
+Don't be alarmed if you see compiler warnings originating in Boost
+headers. We try to eliminate them, but doing so isn't always practical.
+*Errors are another matter*. If you're seeing compilation errors at this
+point in the tutorial, check to be sure you've copied the
+link:#getting-started-on-unix-variants[example program] correctly and
+that you've correctly identified the link:[Boost root directory].
+
+__ link:[Build a Simple Program Using Boost]
+
+=== Prepare to Use a Boost Library Binary
+
+If you want to use any of the separately-compiled Boost libraries,
+you'll need to acquire library binaries.
+
+==== Easy Build and Install
+
+Issue the following commands in the shell (don't type `$`; that
+represents the shell's prompt):
+
+*$* cd *$* ./bootstrap.sh --help
+
+Select your configuration options and invoke `./bootstrap.sh` again
+without the `--help` option. Unless you have write permission in your
+system's `/usr/local/` directory, you'll probably want to at least use
+
+*$* ./bootstrap.sh *--prefix=*_path_/_to_/_installation_/_prefix_
+
+to install somewhere else. Also, consider using the `--show-libraries`
+and `--with-libraries=`_library-name-list_ options to limit the long
+wait you'll experience if you build everything. Finally,
+
+*$* ./b2 install
+
+will leave Boost binaries in the `lib/` subdirectory of your
+installation prefix. You will also find a copy of the Boost headers in
+the `include/` subdirectory of the installation prefix, so you can
+henceforth use that directory as an `#include` path in place of the
+Boost root directory.
+
+__
+
+==== Or, Build Custom Binaries
+
+If you're using a compiler other than your system's default, you'll need
+to use link:[Boost.Build] to create binaries.
+
+You'll also use this method if you need a nonstandard build variant (see
+the link:[Boost.Build documentation] for more details).
+
+===== Install Boost.Build
+
+link:[Boost.Build] is a text-based system for developing, testing, and
+installing software. First, you'll need to build and install it. To do
+this:
+
+[arabic]
+. Go to the directory `tools``build`.
+. Run
+. Run `b2 install --prefix=`_PREFIX_ where _PREFIX_ is the directory
+where you want Boost.Build to be installed
+. Add _PREFIX_`bin` to your PATH environment variable.
+
+[[toolset-name]]
+===== Identify Your Toolset[#toolset]####
+
+First, find the toolset corresponding to your compiler in the following
+table (an up-to-date list is always available [.title-ref]#in the
+Boost.Build documentation#__).
+
+__ ../../tools/build/doc/html/index.html#bbv2.reference.tools
+
+[NOTE]
+.Note
+====
+If you previously chose a toolset for the purposes of link:[building
+b2], you should assume it won't work and instead choose newly from the
+table below.
+====
+
+[width="100%",cols="14%,22%,64%",options="header",]
+|===
+|Toolset Name |Vendor |Notes
+|`acc` |Hewlett Packard |Only very recent versions are known to work
+well with Boost
+
+|`borland` |Borland |
+
+|`como` |Comeau Computing |Using this toolset may require configuring__
+another toolset to act as its backend.
+
+|`darwin` |Apple Computer |Apple's version of the GCC toolchain with
+support for Darwin and MacOS X features such as frameworks.
+
+|`gcc` |The Gnu Project |Includes support for Cygwin and MinGW
+compilers.
+
+|`hp_cxx` |Hewlett Packard |Targeted at the Tru64 operating system.
+
+|`intel` |Intel |
+
+|`msvc` |Microsoft |
+
+|`sun` |Oracle |Only very recent versions are known to work well with
+Boost. Note that the Oracle/Sun compiler has a large number of options
+which effect binary compatibility: it is vital that the libraries are
+built with the same options that your appliction will use. In particular
+be aware that the default standard library may not work well with Boost,
+_unless you are building for C++11_. The particular compiler options you
+need can be injected with the b2 command line options `cxxflags=`and
+`linkflags=`. For example to build with the Apache standard library in
+C++03 mode use
+`b2 cxxflags=-library=stdcxx4 linkflags=-library=stdcxx4`.
+
+|`vacpp` |IBM |The VisualAge C++ compiler.
+|===
+
+__ link:[Boost.Build]
+
+If you have multiple versions of a particular compiler installed, you
+can append the version number to the toolset name, preceded by a hyphen,
+e.g. `intel-9.0` or `borland-5.4.3`.
+
+[[build-directory]]
+===== Select a Build Directory[#build directory]####
+
+link:[Boost.Build] will place all intermediate files it generates while
+building into the *build directory*. If your Boost root directory is
+writable, this step isn't strictly necessary: by default Boost.Build
+will create a `bin.v2/` subdirectory for that purpose in your current
+working directory.
+
+===== Invoke `b2`
+
+Change your current directory to the Boost root directory and invoke
+`b2` as follows:
+
+b2 *--build-dir=*_ *toolset=*_ ` ` stage
+
+For a complete description of these and other invocation options, please
+see the [.title-ref]#Boost.Build documentation#__.
+
+__ ../../tools/build/doc/html/index.html#bbv2.overview.invocation
+
+For example, your session might look like this:
+
+$ cd ~/ $ b2 *--build-dir=*/tmp/build-boost **toolset=**gcc stage
+
+That will build static and shared non-debug multi-threaded variants of
+the libraries. To build all variants, pass the additional option,
+“`--build-type=complete`”.
+
+Building the special `stage` target places Boost library binaries in the
+`stage``lib` subdirectory of the Boost tree. To use a different
+directory pass the `--stagedir=`_directory_ option to `b2`.
+
+[NOTE]
+.Note
+====
+`b2` is case-sensitive; it is important that all the parts shown in
+*bold* type above be entirely lower-case.
+====
+
+For a description of other options you can pass when invoking `b2`,
+type:
+
+....
+b2 --help
+....
+
+In particular, to limit the amount of time spent building, you may be
+interested in:
+
+* reviewing the list of library names with `--show-libraries`
+* limiting which libraries get built with the `--with-`_library-name_ or
+`--without-`_library-name_ options
+* choosing a specific build variant by adding `release` or `debug` to
+the command line.
+
+[NOTE]
+.Note
+====
+Boost.Build can produce a great deal of output, which can make it easy
+to miss problems. If you want to make sure everything is went well, you
+might redirect the output into a file by appending “`>build.log 2>&1`”
+to your command line.
+====
+
+==== Expected Build Output
+
+During the process of building Boost libraries, you can expect to see
+some messages printed on the console. These may include
+
+* Notices about Boost library configuration—for example, the Regex
+library outputs a message about ICU when built without Unicode support,
+and the Python library may be skipped without error (but with a notice)
+if you don't have Python installed.
+* Messages from the build tool that report the number of targets that
+were built or skipped. Don't be surprised if those numbers don't make
+any sense to you; there are many targets per library.
+* Build action messages describing what the tool is doing, which look
+something like:
++
+_toolset-name_.c++ _long_/_path_/_to_/_file_/_being_/_built_
+* Compiler warnings.
+
+==== In Case of Build Errors
+
+The only error messages you see when building Boost—if any—should be
+related to the IOStreams library's support of zip and bzip2 formats as
+described here__. Install the relevant development packages for libz and
+libbz2 if you need those features. Other errors when building Boost
+libraries are cause for concern.
+
+__ ../../libs/iostreams/doc/installation.html
+
+If it seems like the build system can't find your compiler and/or
+linker, consider setting up a `user-config.jam` file as described
+[.title-ref]#here#__. If that isn't your problem or the
+`user-config.jam` file doesn't work for you, please address questions
+about configuring Boost for your compiler to the link:[Boost Users'
+mailing list].
+
+__ ../../tools/build/doc/html/index.html#bbv2.overview.configuration
+
+=== Link Your Program to a Boost Library
+
+To demonstrate linking with a Boost binary library, we'll use the
+following simple program that extracts the subject lines from emails. It
+uses the link:[Boost.Regex] library, which has a separately-compiled
+binary component. :
+
+....
+#include <boost/regex.hpp>
+#include <iostream>
+#include <string>
+
+int main()
+{
+    std::string line;
+    boost::regex pat( "^Subject: (Re: |Aw: )*(.*)" );
+
+    while (std::cin)
+    {
+        std::getline(std::cin, line);
+        boost::smatch matches;
+        if (boost::regex_match(line, matches, pat))
+            std::cout << matches[2] << std::endl;
+    }
+}
+....
+
+There are two main challenges associated with linking:
+
+[arabic]
+. Tool configuration, e.g. choosing command-line options or IDE build
+settings.
+. Identifying the library binary, among all the build variants, whose
+compile configuration is compatible with the rest of your project.
+
+There are two main ways to link to libraries:
+
+[upperalpha]
+. You can specify the full path to each library:
++
+$ c++ -I example.cpp -o example *\*::
+  *~/boost/stage/lib/libboost_regex-gcc34-mt-d-1_36.a*
+. You can separately specify a directory to search (with
+`-L`_directory_) and a library name to search for (with
+`-l`_library_,footnote:[That option is a dash followed by a lowercase
+“L” character, which looks very much like a numeral 1 in some fonts.]
+dropping the filename's leading `lib` and trailing suffix (`.a` in this
+case):
++
+$ c++ -I example.cpp -o example *\*::
+  *-L~/boost/stage/lib/ -lboost_regex-gcc34-mt-d-1_36*
++
+As you can see, this method is just as terse as method A for one
+library; it _really_ pays off when you're using multiple libraries from
+the same directory. Note, however, that if you use this method with a
+library that has both static (`.a`) and dynamic (`.so`) builds, the
+system may choose one automatically for you unless you pass a special
+option such as `-static` on the command line.
+
+In both cases above, the bold text is what you'd add to [.title-ref]#the
+command lines we explored earlier#__.
+
+==== Library Naming
+
+In order to choose the right binary for your build configuration you
+need to know how Boost binaries are named. Each library filename is
+composed of a common sequence of elements that describe how it was
+built. For example, `libboost_regex-vc71-mt-d-x86-1_34.lib` can be
+broken down into the following elements:
+
+`lib`::
+  _Prefix_: except on Microsoft Windows, every Boost library name begins
+  with this string. On Windows, only ordinary static libraries use the
+  `lib` prefix; import libraries and DLLs do not.
+`boost_regex`::
+  _Library name_: all boost library filenames begin with `boost_`.
+`-vc71`::
+  _Toolset tag_: identifies the link:[toolset] and version used to build
+  the binary.
+`-mt`::
+  _Threading tag_: indicates that the library was built with
+  multithreading support enabled. Libraries built without multithreading
+  support can be identified by the absence of `-mt`.
+`-d`::
+  _ABI tag_: encodes details that affect the library's interoperability
+  with other compiled code. For each such feature, a single letter is
+  added to the tag:
+  +
+  ____
+  [width="100%",cols="7%,73%,20%",options="header",]
+  |===
+  |Key |Use this library when: |Boost.Build option
+  |`s` |linking statically to the C++ standard library and compiler
+  runtime support libraries. |runtime-link=static
+
+  |`g` |using debug versions of the standard and runtime support
+  libraries. |runtime-debugging=on
+
+  |`y` |using a special [.title-ref]#debug build of Python#__.
+  |python-debugging=on
+
+  |`d` |building a debug version of your code. |variant=debug
+
+  |`p` |using the STLPort standard library rather than the default one
+  supplied with your compiler. |stdlib=stlport
+  |===
+  ____
+  +
+  For example, if you build a debug version of your code for use with
+  debug versions of the static runtime library and the STLPort standard
+  library, the tag would be: `-sgdp`. If none of the above apply, the
+  ABI tag is ommitted.
+`-x86`::
+  _Architecture and address model tag_: in the first letter, encodes the
+  architecture as follows:
+  +
+  ____
+  [width="65%",cols="14%,40%,46%",options="header",]
+  |===
+  |Key |Architecture |Boost.Build option
+  |`x` |x86-32, x86-64 |architecture=x86
+  |`a` |ARM |architecture=arm
+  |`i` |IA-64 |architecture=ia64
+  |`s` |Sparc |architecture=sparc
+  |`m` |MIPS/SGI |architecture=mips*
+  |`p` |RS/6000 & PowerPC |architecture=power
+  |===
+  ____
+  +
+  The two digits following the letter encode the address model as
+  follows:
+  +
+  ____
+  [width="66%",cols="16%,39%,45%",options="header",]
+  |===
+  |Key |Address model |Boost.Build option
+  |`32` |32 bit |address-model=32
+  |`64` |64 bit |address-model=64
+  |===
+  ____
+`-1_34`::
+  _Version tag_: the full Boost release number, with periods replaced by
+  underscores. For example, version 1.31.1 would be tagged as "-1_31_1".
+`.lib`::
+  _Extension_: determined according to the operating system's usual
+  convention. On most unix-style platforms the extensions are `.a` and
+  `.so` for static libraries (archives) and shared libraries,
+  respectively. On Windows, `.dll` indicates a shared library and `.lib`
+  indicates a static or import library. Where supported by toolsets on
+  unix variants, a full version extension is added (e.g. ".so.1.34") and
+  a symbolic link to the library file, named without the trailing
+  version number, will also be created.
+
+__ ../../libs/python/doc/html/building/python_debugging_builds.html
+
+==== Test Your Program
+
+To test our subject extraction, we'll filter the following text file.
+Copy it out of your browser and save it as `jayne.txt`:
+
+....
+To: George Shmidlap
+From: Rita Marlowe
+Subject: Will Success Spoil Rock Hunter?
+---
+See subject.
+....
+
+If you linked to a shared library, you may need to prepare some
+platform-specific settings so that the system will be able to find and
+load it when your program is run. Most platforms have an environment
+variable to which you can add the directory containing the library. On
+many platforms (Linux, FreeBSD) that variable is `LD_LIBRARY_PATH`, but
+on MacOS it's `DYLD_LIBRARY_PATH`, and on Cygwin it's simply `PATH`. In
+most shells other than `csh` and `tcsh`, you can adjust the variable as
+follows (again, don't type the `$`—that represents the shell prompt):
+
+*$* __VARIABLE_NAME__=__path/to/lib/directory__:$\{_VARIABLE_NAME_} *$*
+export _VARIABLE_NAME_
+
+On `csh` and `tcsh`, it's
+
+*$* setenv _VARIABLE_NAME_ _path/to/lib/directory_:$\{_VARIABLE_NAME_}
+
+Once the necessary variable (if any) is set, you can run your program as
+follows:
+
+*$* _path_/_to_/_compiled_/example < _path_/_to_/jayne.txt
+
+The program should respond with the email subject, “Will Success Spoil
+Rock Hunter?”
+
+=== Conclusion and Further Resources
+
+This concludes your introduction to Boost and to integrating it with
+your programs. As you start using Boost in earnest, there are surely a
+few additional points you'll wish we had covered. One day we may have a
+“Book 2 in the Getting Started series” that addresses them. Until then,
+we suggest you pursue the following resources. If you can't find what
+you need, or there's anything we can do to make this document clearer,
+please post it to the link:[Boost Users' mailing list].
+
+* link:[Boost.Build reference manual]
+* link:[Boost Users' mailing list]
+* link:[Index of all Boost library documentation]
+
+Onward
+
+____
+Good luck, and have fun!
+
+-- the Boost Developers
+____
+
+'''''
