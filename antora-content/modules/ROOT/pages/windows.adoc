@@ -1,4 +1,4 @@
-== image:../../boost.png[Boost]__ Getting Started on Windows
+= image:boost.png[Boost C++ Libraries] Getting Started on Windows
 
 A note to link:[Cygwin] and link:[MinGW] users
 
@@ -141,7 +141,7 @@ following program reads a sequence of integers from standard input, uses
 Boost.Lambda to multiply each number by three, and writes them to
 standard output:
 
-....
+----
 #include <boost/lambda/lambda.hpp>
 #include <iostream>
 #include <iterator>
@@ -155,7 +155,7 @@ int main()
     std::for_each( 
         in(std::cin), in(), std::cout << (_1 * 3) << " " );
 }
-....
+----
 
 Copy the text of this program into a file called `example.cpp`.
 
