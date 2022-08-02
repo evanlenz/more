@@ -30,7 +30,11 @@ We use one typographic convention that might not be immediately obvious:
 _italic_ text in examples is meant as a descriptive placeholder for
 something else, usually information that you'll provide. For example:
 
+
+[source,bash,subs=quotes+]
+----
  *$* echo "My name is _your name_"
+----
 
 Here you're expected to imagine replacing the text “your name” with your
 actual name.
