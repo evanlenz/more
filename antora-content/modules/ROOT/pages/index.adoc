@@ -1,4 +1,4 @@
-= image:../../boost.png[Boost] Getting Started
+= image:boost.png[Boost C++ Libraries] Getting Started
 
 .Use the latest version of this Getting Started guide
 ****
